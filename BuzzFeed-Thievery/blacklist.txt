@@ -1,0 +1,1 @@
+# Each blacklisted user will be stored in the format @handle:status id
