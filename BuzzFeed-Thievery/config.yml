@@ -1,0 +1,14 @@
+# The absolute path to your chromedriver.exe, use forward slashes to deliminate
+chrome-driver-path: 
+
+# Your set of Twitter API Authorization Keys
+twitter-auth-keys:
+    Consumer Key: 
+    Consumer Secret: 
+    Access Token: 
+    Access Token Secret: 
+
+# Specify either latest or instant. On latest, the notifications will be sent
+# on the next latest article after startup. On instant, notifications will
+# immediately be sent based on the latest current article
+latest-article: latest
