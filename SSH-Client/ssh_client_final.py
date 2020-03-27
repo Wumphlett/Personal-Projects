@@ -386,6 +386,7 @@ class Client:
 class CmdSwitch:
     @staticmethod
     def client_help(cur_cli, usr_inp):
+        os.system('clear')
         print('This is an SSH/Telnet command line client designed to quickly connect and store connections')
         print('\nThe available commands are meant to mirror the commands and usage of Linux commands')
         print('\tThe following commands are available:\n')
