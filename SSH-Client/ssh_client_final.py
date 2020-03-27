@@ -621,6 +621,7 @@ if __name__ == '__main__':
     if os.path.isfile('.ssh_client.txt') and os.stat('.ssh_client.txt').st_size != 0:
         client.load_file()
     cmd_switch = CmdSwitch()
+    os.system('clear')
     while True:
         try:
             prompt = client.pwd.replace('/root', '~') + ' '
