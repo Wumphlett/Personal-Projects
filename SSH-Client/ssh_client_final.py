@@ -7,7 +7,7 @@ class Connection:
     def __init__(self, head_dir, name, host, user, password):
         self.head_dir = head_dir
         self.name = ''
-        self.set_name(name)  # TODO proper way of doing this
+        self.set_name(name)
         self.host = host
         self.user = user
         self.password = password
@@ -158,10 +158,9 @@ class Client:
         path, entry = self.get_path_entry(path, return_connection=True)
         if isinstance(entry, connection_type):
             command = entry.con_cmd()
-            # os.system(command)  # Testing
-            print(command)  # Testing
+            os.system(command)
             input('Press Enter: ')
-            # os.system('clear')  # Testing
+            os.system('clear')
         else:
             print('Requested entry is not a valid connection session given the command')
 
@@ -622,7 +621,7 @@ if __name__ == '__main__':
     if os.path.isfile('.ssh_client.txt') and os.stat('.ssh_client.txt').st_size != 0:
         client.load_file()
     cmd_switch = CmdSwitch()
-    while True:  # TODO undo testing comment out
+    while True:
         try:
             prompt = client.pwd.replace('/root', '~') + ' '
             user_input = input(prompt).split()
