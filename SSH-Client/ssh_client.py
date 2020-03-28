@@ -158,6 +158,7 @@ class Client:
         path, entry = self.get_path_entry(path, return_connection=True)
         if isinstance(entry, connection_type):
             command = entry.con_cmd()
+            os.system('clear')
             os.system(command)
             input('Press Enter: ')
             os.system('clear')
@@ -653,3 +654,7 @@ if __name__ == '__main__':
                 print()
                 client.save_file()
                 sys.exit(2)
+        except Exception as e:
+            client.save_file()
+            print(e)
+            sys.exit(-1)
