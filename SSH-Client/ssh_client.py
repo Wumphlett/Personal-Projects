@@ -561,7 +561,7 @@ class CmdSwitch:
 
 class ClientErr:
     class InvalidAttrError(Exception):
-        def __init__(self, attr):
+        def __init__(self):
             Exception.__init__(self)
             self.error_msg = 'Specified attribute is invalid (cannot be empty or contain whitespace)'
 
