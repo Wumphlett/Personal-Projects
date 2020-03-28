@@ -21,16 +21,24 @@ class Connection:
             self.name = name
 
     def set_user(self, user):
-        if user != '':
+        if user != '' and ' ' not in user:
             self.user = user
+        else:
+            raise ClientErr.InvalidAttrError
 
     def set_host(self, hostname):
-        if hostname != '':
+        if hostname != '' and ' ' not in hostname:
             self.host = hostname
+        else:
+            raise ClientErr.InvalidAttrError
 
     def set_pass(self, password):
-        if password != '':
-            self.password = password if 'del pass' not in password else None
+        if password != '' and ' ' not in password:
+            self.password = password
+        elif 'del pass' in password:
+            self.password = None
+        else:
+            raise ClientErr.InvalidAttrError
 
 
 class SecureShell(Connection):
@@ -67,12 +75,20 @@ class Telnet(Connection):
         return {self.name: [self.name, self.host, self.user, self.password, self.port]}
 
     def set_port(self, port):
-        if port != '':
-            self.port = port if 'del user' not in port else None
+        if port != '' and ' ' not in port:
+            self.port = port
+        elif 'del port' in port:
+            self.port = None
+        else:
+            raise ClientErr.InvalidAttrError
 
     def set_user(self, user):
-        if user != '':
-            self.user = user if 'del user' not in user else None
+        if user != '' and ' ' not in user:
+            self.user = user
+        elif 'del user' in user:
+            self.user = None
+        else:
+            raise ClientErr.InvalidAttrError
 
     def __str__(self):
         return '(t) ' + self.name
@@ -544,6 +560,11 @@ class CmdSwitch:
 
 
 class ClientErr:
+    class InvalidAttrError(Exception):
+        def __init__(self, attr):
+            Exception.__init__(self)
+            self.error_msg = 'Specified attribute is invalid (cannot be empty or contain whitespace)'
+
     class InvalidNameError(Exception):
         def __init__(self):
             Exception.__init__(self)
