@@ -110,7 +110,8 @@ class BuzzThief:
                                      'them here; {}\nTo stop receiving these notifications, ' \
                                      'reply with the word halt.'.format(author, article_url, support)
                         now = datetime.datetime.now().strftime('%H:%M:%S')
-                        logging.info('TWEET({}):Notification sent to '.format(now) + author + ' for ' + article_url)
+                        logging.info('TWEET({}):Notification sent to '.format(now) + author + ' for '
+                                     + article_url.split('/')[-1])
                         twitter.update_status(tweet_body)
                         self.last_tweet = datetime.datetime.now()
                         time.sleep(300)  # at least 5 min between tweets to avoid bad bot flag
