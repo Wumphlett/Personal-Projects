@@ -11,7 +11,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 
 
-class BuzzThief:  # TODO Append actions to file to allow for tail command checking
+class BuzzThief:
     def __init__(self):
         self.search_url = 'https://www.buzzfeed.com/search?q=tweets'
         with open('config.yml', 'r') as ymlfile:
@@ -91,7 +91,7 @@ class BuzzThief:  # TODO Append actions to file to allow for tail command checki
             if not self.queue.empty():
                 article_url = self.queue.get()
                 tweet_authors = []
-                response = requests.get(article_url)  # TODO Selenium way of doing this
+                response = requests.get(article_url)
                 for line in response.text.split('\n'):
                     if 'class="subbuzz-tweet__username' in line:
                         start = line.find('>') + 1
@@ -144,7 +144,7 @@ if __name__ == '__main__':
         bt.article_monitoring.join()
         bt.blacklist_monitoring.join()
         bt.send_notification_tweets.join()
-    except Exception as e:  # TODO Quit Drivers on SYS Exit
+    except Exception as e:
         logging.critical(str(e))
         raise SystemExit
     finally:
