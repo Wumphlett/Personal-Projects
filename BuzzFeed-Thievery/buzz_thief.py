@@ -40,7 +40,7 @@ class BuzzThief:
                 '//*[@id="mod-search-feed-1"]/div[1]/section/article[1]/a').get_attribute('href')
             if self.config['latest-article'].lower() == 'instant':
                 now = datetime.datetime.now().strftime('%H:%M:%S')
-                logging.info('QUEUE({}):Adding '.format(now) + self.last_article + ' to queue')
+                logging.info('QUEUE({}):Adding '.format(now) + self.last_article.split('/')[-1] + ' to queue')
                 self.queue.put(self.last_article)
 
         while self.article_monitoring.is_alive():
@@ -53,7 +53,7 @@ class BuzzThief:
                 else:
                     self.queue.put(article_url)
                     now = datetime.datetime.now().strftime('%H:%M:%S')
-                    logging.info('QUEUE({}):Adding '.format(now) + article_url + ' to queue')
+                    logging.info('QUEUE({}):Adding '.format(now) + article_url.split('/')[-1] + ' to queue')
                     self.last_article = article_url
             time.sleep(60)  # in seconds
 
