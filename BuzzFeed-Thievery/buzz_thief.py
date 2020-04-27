@@ -7,6 +7,7 @@ import tweepy
 import yaml
 import logging
 import _thread
+import threading
 from threading import Thread
 from queue import Queue
 import datetime
@@ -22,7 +23,7 @@ class BuzzThief:
             self.config = yaml.safe_load(ymlfile)
             ymlfile.close()
         self.queue = Queue()
-        self.last_tweet = datetime.datetime.now() - datetime.timedelta(minutes=15)
+        self.last_tweet = datetime.datetime.now() - datetime.timedelta(minutes=5)
         self.last_article = ''
         self.article_monitoring = Thread(target=self.monitor_feed, daemon=True)
         self.blacklist_monitoring = Thread(target=self.monitor_mentions, daemon=True)
@@ -52,7 +53,7 @@ class BuzzThief:
                     logging.info('QUEUE({}):Adding {} to queue'.format(now, self.last_article.split('/')[-1]))
                     self.queue.put(self.last_article)
 
-            while self.article_monitoring.is_alive():
+            while threading.main_thread().is_alive():
                 self.driver.get(self.search_url)
                 articles = self.driver.find_elements_by_xpath('//*[@id="mod-search-feed-1"]/div[1]/section/article')
                 for article in articles:
@@ -78,7 +79,7 @@ class BuzzThief:
             auth.set_access_token(keys_dict['Access Token'], keys_dict['Access Token Secret'])
             twitter = tweepy.API(auth)
 
-            while self.blacklist_monitoring.is_alive():
+            while threading.main_thread().is_alive():
                 latest_halt_id = self.latest_blacklist_id()
                 if not latest_halt_id.isdigit():
                     latest_halt_id = '100000'
@@ -115,7 +116,7 @@ class BuzzThief:
             now = datetime.datetime.now().strftime('%H:%M:%S')
             twitter.update_status('Start Monitoring {}'.format(now))
 
-            while self.send_notification_tweets.is_alive():
+            while threading.main_thread().is_alive():
                 if not self.queue.empty():
                     article_url = self.queue.get()
                     tweet_authors = []
@@ -198,4 +199,6 @@ if __name__ == '__main__':
         else:
             logging.critical('EXIT ({}):Exit Due To Exception'.format(exit_time))
         bt.driver.quit()
-        os._exit(se.code)
+        sys.exit(se.code)
+    finally:
+        sys.exit(0)
