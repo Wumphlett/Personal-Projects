@@ -113,7 +113,7 @@ class BuzzThief:
                     while datetime.datetime.now() - self.last_tweet < datetime.timedelta(minutes=5):
                         time.sleep(10)
                     if self.check_black_list(author):
-                        tweet_body = '{}, your tweet has been used by BuzzFeed likely without your consent. ' \
+                        tweet_body = '{}, your tweet has been used by BuzzFeed likely without your approval. ' \
                                      '\nThe article can be found here; {}\nTo request removal of your tweet, contact ' \
                                      'them here; {}\nTo stop receiving these notifications, ' \
                                      'reply with the word halt.'.format(author, article_url, support)
@@ -151,7 +151,7 @@ class BuzzThief:
 
 def soft_kill(sig_code, frame):
     sig_now = datetime.datetime.now().strftime('%H:%M:%S')
-    logging.info('SIGNAL({}):Received Signal Code {}'.format(sig_now, sig_code))
+    logging.info('SIGNL({}):Received Signal Code {}'.format(sig_now, sig_code))
     raise SystemExit
 
 
@@ -168,10 +168,10 @@ if __name__ == '__main__':
     except Exception as e:
         logging.critical(str(e))
         now = datetime.datetime.now().strftime('%H:%M:%S')
-        logging.critical('EXIT({}):Exiting due to exception'.format(now))
+        logging.critical('EXIT ({}):Exiting due to exception'.format(now))
     except SystemExit:
         now = datetime.datetime.now().strftime('%H:%M:%S')
-        logging.info('EXIT({}):Normal System Exit'.format(now))
+        logging.info('EXIT ({}):Normal System Exit'.format(now))
     finally:
         bt.driver.quit()
         sys.exit(0)
