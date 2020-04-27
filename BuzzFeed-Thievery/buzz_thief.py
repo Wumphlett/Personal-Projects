@@ -26,6 +26,7 @@ class BuzzThief:
         self.blacklist_monitoring = Thread(target=self.monitor_mentions, daemon=True)
         self.send_notification_tweets = Thread(target=self.send_tweets, daemon=True)
         chrome_options = Options()
+        chrome_options.add_argument('--incognito')
         chrome_options.add_argument('--headless')
         chrome_options.add_argument('--disable-gpu')
         self.driver = webdriver.Chrome(options=chrome_options, executable_path=self.config['chrome-driver-path'])
@@ -168,9 +169,8 @@ if __name__ == '__main__':
         bt.blacklist_monitoring.join()
         bt.send_notification_tweets.join()
     except Exception as e:
-        logging.critical(str(e))
         exit_time = datetime.datetime.now().strftime('%H:%M:%S')
-        logging.critical('EXIT ({}):Exiting due to exception'.format(exit_time))
+        logging.exception('EXIT ({}):Exiting due to exception'.format(exit_time))
     except SystemExit:
         exit_time = datetime.datetime.now().strftime('%H:%M:%S')
         logging.info('EXIT ({}):Normal System Exit'.format(exit_time))
