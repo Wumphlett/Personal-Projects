@@ -184,7 +184,7 @@ if __name__ == '__main__':
     bt = BuzzThief()
     try:
         signal.signal(signal.SIGTERM, sig_kill)
-        signal.signal(signal.SIGINT, sig_kill)
+        signal.signal(signal.SIGUSR1, sig_kill)
         bt.article_monitoring.start()
         bt.blacklist_monitoring.start()
         bt.send_notification_tweets.start()
