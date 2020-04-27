@@ -67,8 +67,8 @@ class BuzzThief:
                 time.sleep(900)  # in seconds
         except Exception:
             exc_time = datetime.datetime.now().strftime('%H:%M:%S')
-            logging.exception('EXIT ({}):EXCEPTION'.format(exc_time))
-            os.system('kill -2 {}'.format(os.getpid()))
+            logging.exception('({}):EXCEPTION'.format(exc_time))
+            os.system('kill -10 {}'.format(os.getpid()))
             return
 
     def monitor_mentions(self):
@@ -99,8 +99,8 @@ class BuzzThief:
                 time.sleep(900)  # in seconds
         except Exception:
             exc_time = datetime.datetime.now().strftime('%H:%M:%S')
-            logging.exception('EXIT ({}):EXCEPTION'.format(exc_time))
-            os.system('kill -2 {}'.format(os.getpid()))
+            logging.exception('({}):EXCEPTION'.format(exc_time))
+            os.system('kill -10 {}'.format(os.getpid()))
             return
 
     def send_tweets(self):
@@ -148,8 +148,8 @@ class BuzzThief:
                     continue
         except Exception:
             exc_time = datetime.datetime.now().strftime('%H:%M:%S')
-            logging.exception('EXIT ({}):EXCEPTION'.format(exc_time))
-            os.system('kill -2 {}'.format(os.getpid()))
+            logging.exception('({}):EXCEPTION'.format(exc_time))
+            os.system('kill -10 {}'.format(os.getpid()))
             return
 
     @staticmethod
