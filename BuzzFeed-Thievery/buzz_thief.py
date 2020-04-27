@@ -42,6 +42,8 @@ class BuzzThief:
             self.driver.get(self.search_url)
             self.last_article = self.driver.find_element_by_xpath(
                 '//*[@id="mod-search-feed-1"]/div[1]/section/article[1]/a').get_attribute('href')
+            now = datetime.datetime.now().strftime('%H:%M:%S')
+            logging.info('QUEUE({}):Latest article upon start up is {}'.format(now, self.last_article.split('/')[-1]))
             if self.config['latest-article'].lower() == 'instant':
                 now = datetime.datetime.now().strftime('%H:%M:%S')
                 logging.info('QUEUE({}):Adding {} to queue'.format(now, self.last_article.split('/')[-1]))
