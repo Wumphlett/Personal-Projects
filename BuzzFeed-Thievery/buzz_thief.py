@@ -46,7 +46,6 @@ class BuzzThief:
                 now = datetime.datetime.now().strftime('%H:%M:%S')
                 logging.info('QUEUE({}):Adding {} to queue'.format(now, self.last_article.split('/')[-1]))
                 self.queue.put(self.last_article)
-            self.driver.close()
 
         while self.article_monitoring.is_alive():
             self.driver.get(self.search_url)
@@ -116,10 +115,10 @@ class BuzzThief:
                     while datetime.datetime.now() - self.last_tweet < datetime.timedelta(minutes=5):
                         time.sleep(10)
                     if self.check_black_list(author):
-                        tweet_body = '{}, your tweet has been used by BuzzFeed likely without your approval. ' \
+                        tweet_body = '{}, your tweet has been used by BuzzFeed likely without your approval' \
                                      '\nThe article can be found here; {}\nTo request removal of your tweet, contact ' \
                                      'them here; {}\nTo stop receiving these notifications, ' \
-                                     'reply with the word halt.'.format(author, article_url, support)
+                                     'reply with the word halt'.format(author, article_url, support)
                         now = datetime.datetime.now().strftime('%H:%M:%S')
                         logging.info('TWEET({}):Notification ({}) sent to {} for {}'
                                      .format(now, str(num), author, article_url.split('/')[-1]))
@@ -168,7 +167,7 @@ if __name__ == '__main__':
         bt.article_monitoring.join()
         bt.blacklist_monitoring.join()
         bt.send_notification_tweets.join()
-    except Exception as e:
+    except Exception as e:  # TODO This doesn't work, future implementation: event handling / signal
         exit_time = datetime.datetime.now().strftime('%H:%M:%S')
         logging.exception('EXIT ({}):Exiting due to exception'.format(exit_time))
     except SystemExit:
