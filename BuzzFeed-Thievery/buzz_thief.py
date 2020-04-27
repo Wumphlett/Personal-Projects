@@ -149,7 +149,7 @@ class BuzzThief:
         return last_id
 
 
-def soft_kill():
+def soft_kill(sig_code, frame):
     raise SystemExit
 
 
