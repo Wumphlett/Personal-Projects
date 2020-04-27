@@ -30,6 +30,8 @@ class BuzzThief:
         chrome_options.add_argument('--disable-gpu')
         self.driver = webdriver.Chrome(options=chrome_options, executable_path=self.config['chrome-driver-path'])
         logging.basicConfig(filename=sys.path[0] + '/log.txt', level=logging.INFO)
+        now = datetime.datetime.now().strftime('%H:%M:%S')
+        logging.info('START({}):Starting Bot'.format(now))
 
     def monitor_feed(self):
         wait = WebDriverWait(self.driver, 15)
@@ -91,6 +93,8 @@ class BuzzThief:
         auth = tweepy.OAuthHandler(keys_dict['Consumer Key'], keys_dict['Consumer Secret'])
         auth.set_access_token(keys_dict['Access Token'], keys_dict['Access Token Secret'])
         twitter = tweepy.API(auth)
+
+        twitter.update_status('Start Monitoring')
 
         while self.send_notification_tweets.is_alive():
             if not self.queue.empty():
@@ -161,9 +165,11 @@ if __name__ == '__main__':
         bt.send_notification_tweets.join()
     except Exception as e:
         logging.critical(str(e))
-        logging.critical('EXIT:Exiting due to exception')
+        now = datetime.datetime.now().strftime('%H:%M:%S')
+        logging.critical('EXIT({}):Exiting due to exception'.format(now))
     except SystemExit:
-        logging.info('EXIT:Normal System Exit')
+        now = datetime.datetime.now().strftime('%H:%M:%S')
+        logging.info('EXIT({}):Normal System Exit'.format(now))
     finally:
         bt.driver.quit()
         sys.exit(0)
