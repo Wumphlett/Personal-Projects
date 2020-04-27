@@ -30,8 +30,8 @@ class BuzzThief:
         chrome_options.add_argument('--disable-gpu')
         self.driver = webdriver.Chrome(options=chrome_options, executable_path=self.config['chrome-driver-path'])
         logging.basicConfig(filename=sys.path[0] + '/log.txt', level=logging.INFO)
-        now = datetime.datetime.now().strftime('%H:%M:%S')
-        logging.info('START({}):Starting Bot'.format(now))
+        init_time = datetime.datetime.now().strftime('%H:%M:%S')
+        logging.info('START({}):Starting Bot'.format(init_time))
 
     def monitor_feed(self):
         wait = WebDriverWait(self.driver, 15)
@@ -45,6 +45,7 @@ class BuzzThief:
                 now = datetime.datetime.now().strftime('%H:%M:%S')
                 logging.info('QUEUE({}):Adding {} to queue'.format(now, self.last_article.split('/')[-1]))
                 self.queue.put(self.last_article)
+            self.driver.close()
 
         while self.article_monitoring.is_alive():
             self.driver.get(self.search_url)
@@ -58,7 +59,8 @@ class BuzzThief:
                     now = datetime.datetime.now().strftime('%H:%M:%S')
                     logging.info('QUEUE({}):Adding {} to queue'.format(now, article_url.split('/')[-1]))
                     self.last_article = article_url
-            time.sleep(60)  # in seconds
+            self.driver.close()
+            time.sleep(900)  # in seconds
 
     def monitor_mentions(self):
         keys_dict = self.config['twitter-auth-keys']
@@ -167,11 +169,11 @@ if __name__ == '__main__':
         bt.send_notification_tweets.join()
     except Exception as e:
         logging.critical(str(e))
-        now = datetime.datetime.now().strftime('%H:%M:%S')
-        logging.critical('EXIT ({}):Exiting due to exception'.format(now))
+        exit_time = datetime.datetime.now().strftime('%H:%M:%S')
+        logging.critical('EXIT ({}):Exiting due to exception'.format(exit_time))
     except SystemExit:
-        now = datetime.datetime.now().strftime('%H:%M:%S')
-        logging.info('EXIT ({}):Normal System Exit'.format(now))
+        exit_time = datetime.datetime.now().strftime('%H:%M:%S')
+        logging.info('EXIT ({}):Normal System Exit'.format(exit_time))
     finally:
         bt.driver.quit()
         sys.exit(0)
