@@ -7,7 +7,6 @@ import tweepy
 import yaml
 import logging
 import _thread
-import threading
 from threading import Thread
 from queue import Queue
 import datetime
@@ -53,7 +52,7 @@ class BuzzThief:
                     logging.info('QUEUE({}):Adding {} to queue'.format(now, self.last_article.split('/')[-1]))
                     self.queue.put(self.last_article)
 
-            while threading.main_thread().is_alive():
+            while self.article_monitoring.is_alive():
                 self.driver.get(self.search_url)
                 articles = self.driver.find_elements_by_xpath('//*[@id="mod-search-feed-1"]/div[1]/section/article')
                 for article in articles:
@@ -79,7 +78,7 @@ class BuzzThief:
             auth.set_access_token(keys_dict['Access Token'], keys_dict['Access Token Secret'])
             twitter = tweepy.API(auth)
 
-            while threading.main_thread().is_alive():
+            while self.blacklist_monitoring.is_alive():
                 latest_halt_id = self.latest_blacklist_id()
                 if not latest_halt_id.isdigit():
                     latest_halt_id = '100000'
@@ -116,7 +115,7 @@ class BuzzThief:
             now = datetime.datetime.now().strftime('%H:%M:%S')
             twitter.update_status('Start Monitoring {}'.format(now))
 
-            while threading.main_thread().is_alive():
+            while self.send_notification_tweets.is_alive():
                 if not self.queue.empty():
                     article_url = self.queue.get()
                     tweet_authors = []
