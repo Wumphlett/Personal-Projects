@@ -198,4 +198,4 @@ if __name__ == '__main__':
         else:
             logging.critical('EXIT ({}):Exit Due To Exception'.format(exit_time))
         bt.driver.quit()
-        sys.exit(se.code)
+        os._exit(se.code)
