@@ -128,17 +128,21 @@ class BuzzThief:
                     now = datetime.datetime.now().strftime('%H:%M:%S')
                     logging.info('TWEET({}):Sending {} tweets for {}'.format(now, str(len(tweet_authors)),
                                                                              article_url.split('/')[-1]))
-                    for num, author in enumerate(tweet_authors, start=1):
+                    for num, author in enumerate(tweet_authors):
                         while datetime.datetime.now() - self.last_tweet < datetime.timedelta(minutes=5):
                             time.sleep(10)
                         if self.check_black_list(author):
+                            if author in tweet_authors[:num]:
+                                now = datetime.datetime.now().strftime('%H:%M:%S')
+                                logging.info('TWEET({}):Duplicate Author ({}), skipping'.format(now, author))
+                                continue
                             tweet_body = '{}, your tweet has been used by BuzzFeed likely without your approval' \
                                          '\nThe article can be found here; {}\nTo request removal of your tweet, contact ' \
                                          'them here; {}\nTo stop receiving these notifications, ' \
                                          'reply with the word halt'.format(author, article_url, support)
                             now = datetime.datetime.now().strftime('%H:%M:%S')
                             logging.info('TWEET({}):Notification ({}) sent to {} for {}'
-                                         .format(now, str(num), author, article_url.split('/')[-1]))
+                                         .format(now, str(num+1), author, article_url.split('/')[-1]))
                             twitter.update_status(tweet_body)
                             self.last_tweet = datetime.datetime.now()
                             time.sleep(300)  # at least 5 min between tweets to avoid bad bot flag
