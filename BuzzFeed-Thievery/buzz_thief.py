@@ -1,6 +1,7 @@
 import sys
 import time
 import requests
+import signal
 import tweepy
 import yaml
 import logging
@@ -40,7 +41,7 @@ class BuzzThief:
                 '//*[@id="mod-search-feed-1"]/div[1]/section/article[1]/a').get_attribute('href')
             if self.config['latest-article'].lower() == 'instant':
                 now = datetime.datetime.now().strftime('%H:%M:%S')
-                logging.info('QUEUE({}):Adding '.format(now) + self.last_article.split('/')[-1] + ' to queue')
+                logging.info('QUEUE({}):Adding {} to queue'.format(now, self.last_article.split('/')[-1]))
                 self.queue.put(self.last_article)
 
         while self.article_monitoring.is_alive():
@@ -53,7 +54,7 @@ class BuzzThief:
                 else:
                     self.queue.put(article_url)
                     now = datetime.datetime.now().strftime('%H:%M:%S')
-                    logging.info('QUEUE({}):Adding '.format(now) + article_url.split('/')[-1] + ' to queue')
+                    logging.info('QUEUE({}):Adding {} to queue'.format(now, article_url.split('/')[-1]))
                     self.last_article = article_url
             time.sleep(60)  # in seconds
 
@@ -77,7 +78,7 @@ class BuzzThief:
                     with open(sys.path[0] + '/blacklist.txt', 'a') as blacklist:
                         blacklist.write(blacklist_item)
                     now = datetime.datetime.now().strftime('%H:%M:%S')
-                    logging.info('BLACK({}):User '.format(now) + tweet['user']['screen_name'] + ' added to blacklist')
+                    logging.info('BLACK({}):User {} added to blacklist'.format(now, tweet['user']['screen_name']))
                     blacklist.close()
                     if tweet.get('in_reply_to_status_id') is not None:
                         twitter.destroy_status(tweet['in_reply_to_status_id'])
@@ -101,6 +102,9 @@ class BuzzThief:
                         start = line.find('>') + 1
                         end = line.rfind('<')
                         tweet_authors.append(line[start:end])
+                now = datetime.datetime.now().strftime('%H:%M:%S')
+                logging.info('TWEET({}):Sending {} tweets for {}'.format(now, str(len(tweet_authors)),
+                                                                         article_url.split('/')[-1]))
                 for author in tweet_authors:
                     while datetime.datetime.now() - self.last_tweet < datetime.timedelta(minutes=5):
                         time.sleep(10)
@@ -110,8 +114,8 @@ class BuzzThief:
                                      'them here; {}\nTo stop receiving these notifications, ' \
                                      'reply with the word halt.'.format(author, article_url, support)
                         now = datetime.datetime.now().strftime('%H:%M:%S')
-                        logging.info('TWEET({}):Notification sent to '.format(now) + author + ' for '
-                                     + article_url.split('/')[-1])
+                        logging.info('TWEET({}):Notification sent to {} for {}'
+                                     .format(now, author, article_url.split('/')[-1]))
                         twitter.update_status(tweet_body)
                         self.last_tweet = datetime.datetime.now()
                         time.sleep(300)  # at least 5 min between tweets to avoid bad bot flag
@@ -141,9 +145,14 @@ class BuzzThief:
         return last_id
 
 
+def soft_kill():
+    raise SystemExit
+
+
 if __name__ == '__main__':
     bt = BuzzThief()
     try:
+        signal.signal(signal.SIGTERM, soft_kill)
         bt.article_monitoring.start()
         bt.blacklist_monitoring.start()
         bt.send_notification_tweets.start()
@@ -153,8 +162,8 @@ if __name__ == '__main__':
     except Exception as e:
         logging.critical(str(e))
         logging.critical('EXIT:Exiting due to exception')
-        raise SystemExit
     except SystemExit:
         logging.info('EXIT:Normal System Exit')
     finally:
         bt.driver.quit()
+        sys.exit(0)
