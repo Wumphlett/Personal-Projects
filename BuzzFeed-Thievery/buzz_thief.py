@@ -59,7 +59,6 @@ class BuzzThief:
                     now = datetime.datetime.now().strftime('%H:%M:%S')
                     logging.info('QUEUE({}):Adding {} to queue'.format(now, article_url.split('/')[-1]))
                     self.last_article = article_url
-            self.driver.close()
             time.sleep(900)  # in seconds
 
     def monitor_mentions(self):
@@ -96,7 +95,8 @@ class BuzzThief:
         auth.set_access_token(keys_dict['Access Token'], keys_dict['Access Token Secret'])
         twitter = tweepy.API(auth)
 
-        twitter.update_status('Start Monitoring')
+        now = datetime.datetime.now().strftime('%H:%M:%S')
+        twitter.update_status('Start Monitoring {}'.format(now))
 
         while self.send_notification_tweets.is_alive():
             if not self.queue.empty():
