@@ -150,6 +150,8 @@ class BuzzThief:
 
 
 def soft_kill(sig_code, frame):
+    sig_now = datetime.datetime.now().strftime('%H:%M:%S')
+    logging.info('SIGNAL({}):Received Signal Code {}'.format(sig_now, sig_code))
     raise SystemExit
 
 
