@@ -34,7 +34,8 @@ class BuzzThief:
         self.driver = webdriver.Chrome(options=chrome_options, executable_path=self.config['chrome-driver-path'])
         logging.basicConfig(filename=sys.path[0] + '/log.txt', level=logging.INFO)
         init_time = datetime.datetime.now().strftime('%H:%M:%S')
-        logging.info('START({}):Starting Bot'.format(init_time))
+        mode = 'instant' if self.config['latest-article'] == 'instant' else 'latest'
+        logging.info('START({}):Starting Bot in Mode: {}'.format(init_time, mode))
 
     def monitor_feed(self):
         try:
