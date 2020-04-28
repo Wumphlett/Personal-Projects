@@ -97,7 +97,9 @@ class BuzzThief:
                         logging.info('BLACK({}):User {} added to blacklist'.format(now, tweet['user']['screen_name']))
                         blacklist.close()
                         if tweet.get('in_reply_to_status_id') is not None:
-                            twitter.destroy_status(tweet['in_reply_to_status_id'])
+                            or_tweet = twitter.get_status(tweet['in_reply_to_status_id'])._json['text']
+                            if tweet['user'] == or_tweet[:or_tweet.index(',')]:
+                                twitter.destroy_status(tweet['in_reply_to_status_id'])
                 now = datetime.datetime.now().strftime('%H:%M:%S')
                 logging.info('BLACK({}):Completed blacklist check'.format(now, self.last_article.split('/')[-1]))
                 time.sleep(900)  # in seconds
@@ -115,9 +117,6 @@ class BuzzThief:
             auth = tweepy.OAuthHandler(keys_dict['Consumer Key'], keys_dict['Consumer Secret'])
             auth.set_access_token(keys_dict['Access Token'], keys_dict['Access Token Secret'])
             twitter = tweepy.API(auth)
-
-            now = datetime.datetime.now().strftime('%H:%M:%S')
-            twitter.update_status('Start Monitoring {}'.format(now))
 
             while self.send_notification_tweets.is_alive():
                 if not self.queue.empty():
