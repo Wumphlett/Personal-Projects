@@ -48,12 +48,19 @@ class TelegramTerminal:
         context.bot.send_message(chat_id=update.effective_chat.id, text=output)
 
     def log(self, update, context):
+        if len(context.args) < 1:
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Provide a script name fragment')
+            return
         output = os.popen('grep -v grep {}/bash_scripts/1-config.txt | grep {}'.format(self.base_path, context.args[0]))
         script = output.read()
+        script = script.replace('\n', '', 1)
         if script == '' or script.count('\n') > 0:
             context.bot.send_message(chat_id=update.effective_chat.id, text='Invalid argument, does not specify script')
         else:
-            output = os.popen('tail -f {}/{}/log.txt'.format(self.base_path, script.split(':')[3])).read()
+            if script.split(':')[2] == 'telegram':
+                output = 'Cannot view the log of the bot from the bot while the bot is running'
+            else:
+                output = os.popen('tail {}/{}/log.txt'.format(self.base_path, script.split(':')[3])).read()
             context.bot.send_message(chat_id=update.effective_chat.id, text=output)
 
 
