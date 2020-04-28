@@ -66,7 +66,7 @@ class TelegramTerminal:
             if script.split(':')[2] == 'telegram':
                 output = 'Cannot view the log of the bot from the bot while the bot is running'
             else:
-                output = os.popen('tail {}/{}/log.txt'.format(self.base_path, script.split(':')[3])).read()
+                output = os.popen('tail -n 20 {}/{}/log.txt'.format(self.base_path, script.split(':')[3])).read()
             context.bot.send_message(chat_id=update.effective_chat.id, text=output)
 
     def run(self, update, context):
@@ -79,8 +79,8 @@ class TelegramTerminal:
         if script == '' or script.count('\n') > 0:
             context.bot.send_message(chat_id=update.effective_chat.id, text='Invalid argument, does not specify script')
         else:
-            os.system('{}/bash_scripts/{}'.format(self.base_path, script.split(':')))
-            output = 'Running script {}'.format(script.split(':'))
+            os.system('{}/bash_scripts/{}'.format(self.base_path, script.split(':')[2]))
+            output = 'Running script {}'.format(script.split(':')[2])
             context.bot.send_message(chat_id=update.effective_chat.id, text=output)
 
     def stop(self, update, context):
@@ -93,8 +93,8 @@ class TelegramTerminal:
         if script == '' or script.count('\n') > 0:
             context.bot.send_message(chat_id=update.effective_chat.id, text='Invalid argument, does not specify script')
         else:
-            os.system('{}/bash_scripts/{}-kill'.format(self.base_path, script.split(':')))
-            output = 'Running script {}-kill'.format(script.split(':'))
+            os.system('{}/bash_scripts/{}-kill'.format(self.base_path, script.split(':')[2]))
+            output = 'Running script {}-kill'.format(script.split(':')[2])
             context.bot.send_message(chat_id=update.effective_chat.id, text=output)
 
 

@@ -28,8 +28,8 @@ class BuzzThief:
         self.send_notification_tweets = Thread(target=self.send_tweets, daemon=True)
         chrome_options = Options()
         chrome_options.add_argument('--incognito')
-        chrome_options.add_argument('--headless')
-        chrome_options.add_argument('--disable-gpu')
+        #chrome_options.add_argument('--headless')
+        #chrome_options.add_argument('--disable-gpu')
         self.driver = webdriver.Chrome(options=chrome_options, executable_path=self.config['chrome-driver-path'])
         logging.basicConfig(filename=sys.path[0] + '/log.txt', level=logging.INFO)
         init_time = datetime.datetime.now().strftime('%H:%M:%S')
@@ -64,6 +64,8 @@ class BuzzThief:
                         now = datetime.datetime.now().strftime('%H:%M:%S')
                         logging.info('QUEUE({}):Adding {} to queue'.format(now, article_url.split('/')[-1]))
                         self.last_article = article_url
+                now = datetime.datetime.now().strftime('%H:%M:%S')
+                logging.info('QUEUE({}):Completed article check'.format(now, self.last_article.split('/')[-1]))
                 time.sleep(900)  # in seconds
         except Exception:
             exc_time = datetime.datetime.now().strftime('%H:%M:%S')
@@ -96,6 +98,8 @@ class BuzzThief:
                         blacklist.close()
                         if tweet.get('in_reply_to_status_id') is not None:
                             twitter.destroy_status(tweet['in_reply_to_status_id'])
+                now = datetime.datetime.now().strftime('%H:%M:%S')
+                logging.info('BLACK({}):Completed blacklist check'.format(now, self.last_article.split('/')[-1]))
                 time.sleep(900)  # in seconds
         except Exception:
             exc_time = datetime.datetime.now().strftime('%H:%M:%S')
@@ -204,4 +208,5 @@ if __name__ == '__main__':
         bt.driver.quit()
         sys.exit(se.code)
     finally:
+        logging.info('Exiting')
         sys.exit(0)
