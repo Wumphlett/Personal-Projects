@@ -6,7 +6,6 @@ import signal
 import tweepy
 import yaml
 import logging
-import _thread
 from threading import Thread
 from queue import Queue
 import datetime
