@@ -2,4 +2,7 @@
 token:
 
 # Super Username
-username: 
+username:
+
+# Base Script Path
+path:
