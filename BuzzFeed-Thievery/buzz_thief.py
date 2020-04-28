@@ -28,10 +28,10 @@ class BuzzThief:
         self.send_notification_tweets = Thread(target=self.send_tweets, daemon=True)
         chrome_options = Options()
         chrome_options.add_argument('--incognito')
-        #chrome_options.add_argument('--headless')
-        #chrome_options.add_argument('--disable-gpu')
+        chrome_options.add_argument('--headless')
+        chrome_options.add_argument('--disable-gpu')
         self.driver = webdriver.Chrome(options=chrome_options, executable_path=self.config['chrome-driver-path'])
-        logging.basicConfig(filename=sys.path[0] + '/log.txt', level=logging.INFO)
+        logging.basicConfig(filename=sys.path[0] + '/log.txt', level=logging.INFO, format='%(message)s')
         init_time = datetime.datetime.now().strftime('%H:%M:%S')
         mode = 'instant' if self.config['latest-article'] == 'instant' else 'latest'
         logging.info('START({}):Starting Bot in Mode: {}'.format(init_time, mode))
