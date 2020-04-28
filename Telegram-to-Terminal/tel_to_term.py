@@ -28,6 +28,9 @@ class TelegramTerminal:
         running_handler = CommandHandler('running', self.running)
         dispatcher.add_handler(running_handler)
 
+        log_handler = CommandHandler('log', self.log)
+        dispatcher.add_handler(log_handler)
+
     @staticmethod
     def start(update, context):
         with open(sys.path[0] + '/config.yml', 'r') as ymlfile:
@@ -40,26 +43,18 @@ class TelegramTerminal:
         context.bot.send_message(chat_id=update.effective_chat.id, text=msg)
 
     def running(self, update, context):
-        out = subprocess.Popen('{}/bash_scripts/currently-running'.format(self.base_path), stdout=subprocess.PIPE,
-                               stderr=subprocess.STDOUT)
+        output = os.popen('{}/bash_scripts/currently-running-tel'.format(self.base_path)).read()
 
-        stdout = str(out.communicate()[0], 'utf-8')
-        context.bot.send_message(chat_id=update.effective_chat.id, text=stdout)
+        context.bot.send_message(chat_id=update.effective_chat.id, text=output)
 
     def log(self, update, context):
-        out = subprocess.Popen('grep -v grep {}/bash_scripts/1-config.txt | grep {}'.format(self.base_path,
-                                                                                            context.args[0]),
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.STDOUT)
-        script = str(out.communicate()[0], 'utf-8')
+        output = os.popen('grep -v grep {}/bash_scripts/1-config.txt | grep {}'.format(self.base_path, context.args[0]))
+        script = output.read()
         if script == '' or script.count('\n') > 0:
             context.bot.send_message(chat_id=update.effective_chat.id, text='Invalid argument, does not specify script')
         else:
-            out = subprocess.Popen('tail -f {}/{}/log.txt'.format(self.base_path, script.split(':')[3]),
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.STDOUT)
-            stdout = str(out.communicate()[0], 'utf-8')
-            context.bot.send_message(chat_id=update.effective_chat.id, text=stdout)
+            output = os.popen('tail -f {}/{}/log.txt'.format(self.base_path, script.split(':')[3])).read()
+            context.bot.send_message(chat_id=update.effective_chat.id, text=output)
 
 
 if __name__ == '__main__':
