@@ -31,6 +31,12 @@ class TelegramTerminal:
         log_handler = CommandHandler('log', self.log)
         dispatcher.add_handler(log_handler)
 
+        run_handler = CommandHandler('run', self.run)
+        dispatcher.add_handler(run_handler)
+
+        stop_handler = CommandHandler('stop', self.stop)
+        dispatcher.add_handler(stop_handler)
+
     @staticmethod
     def start(update, context):
         with open(sys.path[0] + '/config.yml', 'r') as ymlfile:
@@ -61,6 +67,34 @@ class TelegramTerminal:
                 output = 'Cannot view the log of the bot from the bot while the bot is running'
             else:
                 output = os.popen('tail {}/{}/log.txt'.format(self.base_path, script.split(':')[3])).read()
+            context.bot.send_message(chat_id=update.effective_chat.id, text=output)
+
+    def run(self, update, context):
+        if len(context.args) < 1:
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Provide a script name fragment')
+            return
+        output = os.popen('grep -v grep {}/bash_scripts/1-config.txt | grep {}'.format(self.base_path, context.args[0]))
+        script = output.read()
+        script = script.replace('\n', '', 1)
+        if script == '' or script.count('\n') > 0:
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Invalid argument, does not specify script')
+        else:
+            os.system('{}/bash_scripts/{}'.format(self.base_path, script.split(':')))
+            output = 'Running script {}'.format(script.split(':'))
+            context.bot.send_message(chat_id=update.effective_chat.id, text=output)
+
+    def stop(self, update, context):
+        if len(context.args) < 1:
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Provide a script name fragment')
+            return
+        output = os.popen('grep -v grep {}/bash_scripts/1-config.txt | grep {}'.format(self.base_path, context.args[0]))
+        script = output.read()
+        script = script.replace('\n', '', 1)
+        if script == '' or script.count('\n') > 0:
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Invalid argument, does not specify script')
+        else:
+            os.system('{}/bash_scripts/{}-kill'.format(self.base_path, script.split(':')))
+            output = 'Running script {}-kill'.format(script.split(':'))
             context.bot.send_message(chat_id=update.effective_chat.id, text=output)
 
 
