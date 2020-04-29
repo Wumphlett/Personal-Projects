@@ -47,7 +47,7 @@ class TelegramTerminal:
 
     def start(self, update, context):
         with open(sys.path[0] + '/config.yml', 'r') as ymlfile:
-            superuser = yaml.safe_load(ymlfile)['username']
+            superuser = yaml.safe_load(ymlfile)['user-id']
             ymlfile.close()
         if update.message.from_user.id != superuser:
             msg = 'You do not have permission to access this terminal'
