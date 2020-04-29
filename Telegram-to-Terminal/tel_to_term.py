@@ -27,6 +27,9 @@ class TelegramTerminal:
         start_handler = CommandHandler('start', self.start)
         dispatcher.add_handler(start_handler)
 
+        auth_handler = CommandHandler('auth', self.start)
+        dispatcher.add_handler(auth_handler)
+
         running_handler = CommandHandler('running', self.running)
         dispatcher.add_handler(running_handler)
 
@@ -54,7 +57,7 @@ class TelegramTerminal:
             keyboard = [
                 [KeyboardButton('/running')],
                 [KeyboardButton('/run'), KeyboardButton('/stop')],
-                [KeyboardButton('/log'), KeyboardButton('/xxx')]
+                [KeyboardButton('/log'), KeyboardButton('/auth')]
             ]
             kb_markup = ReplyKeyboardMarkup(keyboard)
             context.bot.send_message(chat_id=update.message.chat_id, text='Welcome Superuser', reply_markup=kb_markup)
@@ -92,7 +95,7 @@ class TelegramTerminal:
         query.answer()
         command = '{} {}'.format(query.message.text.split()[0], query.data)
         query.edit_message_text(text=command)
-        time.sleep(1)
+        time.sleep(.5)
         dir_name = os.popen('grep -v grep {}/bash_scripts/1-config.txt | grep {}'.format(self.base_path, query.data))\
             .read().replace('\n', '', 1).split(':')[3]
         cmd_dict = {
