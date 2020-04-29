@@ -91,7 +91,7 @@ class TelegramTerminal:
         print(cmd_dict[query.message.text.split()[0]])
 
     def get_options(self):
-        output = os.popen('grep -v grep {}}/bash_scripts/1-config.txt | grep -v ^#'.format(self.base_path))\
+        output = os.popen('grep -v grep {}/bash_scripts/1-config.txt | grep -v ^#'.format(self.base_path))\
             .read().replace('\n', '', 1)
         print(output)
         options = []
