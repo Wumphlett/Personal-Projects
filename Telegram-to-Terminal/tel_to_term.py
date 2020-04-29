@@ -49,7 +49,7 @@ class TelegramTerminal:
         with open(sys.path[0] + '/config.yml', 'r') as ymlfile:
             superuser = yaml.safe_load(ymlfile)['username']
             ymlfile.close()
-        if update.message.from_user.username != superuser:
+        if update.message.from_user.id != superuser:
             msg = 'You do not have permission to access this terminal'
             context.bot.send_message(chat_id=update.effective_chat.id, text=msg)
         else:
@@ -65,10 +65,10 @@ class TelegramTerminal:
     def running(self, update, context):
         if update.message.from_user.id == self.superuser:
             output = os.popen('{}/bash_scripts/currently-running-tel'.format(self.base_path)).read()
+            context.bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
+            context.bot.send_message(chat_id=update.effective_chat.id, text=output)
         else:
-            output = 'Permission Denied'
-        context.bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
-        context.bot.send_message(chat_id=update.effective_chat.id, text=output)
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Permission Denied')
 
     def run(self, update, context):
         if update.message.from_user.id == self.superuser:
@@ -108,7 +108,6 @@ class TelegramTerminal:
             '/log': 'tail -n 20 {}/{}/log.txt'.format(self.base_path, dir_name)
         }
         cmd_return = os.popen(cmd_dict[query.message.text.split()[0]]).read()
-        context.bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
         query.edit_message_text(text=cmd_return)
 
     def get_options(self):
