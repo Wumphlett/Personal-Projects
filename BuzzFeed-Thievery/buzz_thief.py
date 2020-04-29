@@ -55,15 +55,16 @@ class BuzzThief:
             while self.article_monitoring.is_alive():
                 self.driver.get(self.search_url)
                 articles = self.driver.find_elements_by_xpath('//*[@id="mod-search-feed-1"]/div[1]/section/article')
+                aux = articles[0].find_element_by_xpath('.//a').get_attribute('href')
                 for article in articles:
                     article_url = article.find_element_by_xpath('.//a').get_attribute('href')
                     if self.last_article == article_url:
+                        self.last_article = aux
                         break
                     else:
                         self.queue.put(article_url)
                         now = datetime.datetime.now().strftime('%H:%M:%S')
                         logging.info('QUEUE({}):Adding {} to queue'.format(now, article_url.split('/')[-1]))
-                        self.last_article = article_url
                 now = datetime.datetime.now().strftime('%H:%M:%S')
                 logging.info('QUEUE({}):Completed article check'.format(now, self.last_article.split('/')[-1]))
                 time.sleep(900)  # in seconds
@@ -207,5 +208,4 @@ if __name__ == '__main__':
         bt.driver.quit()
         sys.exit(se.code)
     finally:
-        logging.info('Exiting')
         sys.exit(0)
