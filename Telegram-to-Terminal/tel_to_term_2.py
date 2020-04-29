@@ -27,6 +27,9 @@ class TelegramTerminal:
         start_handler = CommandHandler('start', self.start)
         dispatcher.add_handler(start_handler)
 
+        running_handler = CommandHandler('running', self.running)
+        dispatcher.add_handler(running_handler)
+
         run_handler = CommandHandler('run', self.run)
         dispatcher.add_handler(run_handler)
 
@@ -73,7 +76,7 @@ class TelegramTerminal:
 
     def log(self, update, context):
         keyboard = self.get_options()
-        update.message.reply_text('/stop <script>', reply_markup=keyboard)
+        update.message.reply_text('/log <script>', reply_markup=keyboard)
 
     def call_back(self, update, context):
         query = update.callback_query
@@ -82,20 +85,19 @@ class TelegramTerminal:
         query.edit_message_text(text=command)
         time.sleep(1)
         dir_name = os.popen('grep -v grep {}/bash_scripts/1-config.txt | grep {}'.format(self.base_path, query.data))\
-            .read().replace('\n', '', 1)
+            .read().replace('\n', '', 1).split(':')[3]
         cmd_dict = {
             '/run': '{}/bash_scripts/{}'.format(self.base_path, query.data),
             '/stop': '{}/bash_scripts/{}-kill'.format(self.base_path, query.data),
             '/log': 'tail -n 20 {}/{}/log.txt'.format(self.base_path, dir_name)
         }
-        print(cmd_dict[query.message.text.split()[0]])
+        cmd_return = os.popen(cmd_dict[query.message.text.split()[0]]).read()
+        query.edit_message_text(text=cmd_return)
 
     def get_options(self):
-        output = os.popen('grep -v grep {}/bash_scripts/1-config.txt | grep -v ^#'.format(self.base_path))\
-            .read().replace('\n', '', 1)
-        print(output)
+        output = os.popen('grep -v grep {}/bash_scripts/1-config.txt | grep -v ^#'.format(self.base_path)).read()
         options = []
-        for line in output.split('\n'):
+        for line in output.split('\n')[:-1]:
             options.append(InlineKeyboardButton(line.split(':')[2], callback_data=line.split(':')[2]))
         keyboard = []
         if len(options) % 2 == 0:
@@ -107,12 +109,6 @@ class TelegramTerminal:
             keyboard.append([options[-1]])
         return InlineKeyboardMarkup(keyboard)
 
-    '''
-    if update.message.from_user.id == self.superuser:
-        pass
-    else:
-        context.bot.send_message(chat_id=update.effective_chat.id, text='Permission Denied')
-    '''
     def error(self, update, context):
         logging.warning('Error: {}'.format(update, context.error))
 
