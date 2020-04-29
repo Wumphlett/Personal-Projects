@@ -9,7 +9,7 @@ from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
 
 class TelegramTerminal:
     def __init__(self):
-        logging.basicConfig(filename=sys.path[0] + '/log.txt', level=logging.INFO, format='%(messages)s')
+        logging.basicConfig(filename=sys.path[0] + '/log.txt', level=logging.INFO, format='%(message)s')
         logging.info('Starting Telegram to Terminal')
         with open(sys.path[0] + '/config.yml', 'r') as ymlfile:
             config = yaml.safe_load(ymlfile)
