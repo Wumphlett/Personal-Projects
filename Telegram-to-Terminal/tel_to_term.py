@@ -14,7 +14,7 @@ class TelegramTerminal:
         with open(sys.path[0] + '/config.yml', 'r') as ymlfile:
             config = yaml.safe_load(ymlfile)
             self.token = config['token']
-            self.superuser = config['username']
+            self.superuser = config['user-id']
             self.base_path = config['path']
             ymlfile.close()
         self.updater = Updater(token=self.token, use_context=True)
@@ -46,10 +46,7 @@ class TelegramTerminal:
         dispatcher.add_error_handler(self.error)
 
     def start(self, update, context):
-        with open(sys.path[0] + '/config.yml', 'r') as ymlfile:
-            superuser = yaml.safe_load(ymlfile)['user-id']
-            ymlfile.close()
-        if update.message.from_user.id != superuser:
+        if update.message.from_user.id != self.superuser:
             msg = 'You do not have permission to access this terminal'
             context.bot.send_message(chat_id=update.effective_chat.id, text=msg)
         else:
