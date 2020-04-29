@@ -67,11 +67,13 @@ class TelegramTerminal:
             output = os.popen('{}/bash_scripts/currently-running-tel'.format(self.base_path)).read()
         else:
             output = 'Permission Denied'
+        context.bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
         context.bot.send_message(chat_id=update.effective_chat.id, text=output)
 
     def run(self, update, context):
         if update.message.from_user.id == self.superuser:
             keyboard = self.get_options()
+            context.bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
             update.message.reply_text('/run <script>', reply_markup=keyboard)
         else:
             context.bot.send_message(chat_id=update.effective_chat.id, text='Permission Denied')
@@ -79,6 +81,7 @@ class TelegramTerminal:
     def stop(self, update, context):
         if update.message.from_user.id == self.superuser:
             keyboard = self.get_options()
+            context.bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
             update.message.reply_text('/stop <script>', reply_markup=keyboard)
         else:
             context.bot.send_message(chat_id=update.effective_chat.id, text='Permission Denied')
@@ -86,6 +89,7 @@ class TelegramTerminal:
     def log(self, update, context):
         if update.message.from_user.id == self.superuser:
             keyboard = self.get_options()
+            context.bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
             update.message.reply_text('/log <script>', reply_markup=keyboard)
         else:
             context.bot.send_message(chat_id=update.effective_chat.id, text='Permission Denied')
@@ -104,6 +108,7 @@ class TelegramTerminal:
             '/log': 'tail -n 20 {}/{}/log.txt'.format(self.base_path, dir_name)
         }
         cmd_return = os.popen(cmd_dict[query.message.text.split()[0]]).read()
+        context.bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
         query.edit_message_text(text=cmd_return)
 
     def get_options(self):
@@ -122,7 +127,7 @@ class TelegramTerminal:
         return InlineKeyboardMarkup(keyboard)
 
     def error(self, update, context):
-        logging.warning('Error: {}'.format(update, context.error))
+        logging.warning('Error: {}'.format(context.error))
 
 
 if __name__ == '__main__':
