@@ -109,11 +109,15 @@ class TelegramTerminal:
     def call_back(self, update, context):
         query = update.callback_query
         query.answer()
-        command = '{} {}'.format(query.message.text.split()[0], query.data)
+        cmd = query.message.text.split()[0]
+        command = '{} {}'.format(cmd, query.data)
         query.edit_message_text(text=command)
-        time.sleep(.5)
-        dir_name = os.popen('grep -v grep {}/bash_scripts/1-config.txt | grep {}'.format(self.base_path, query.data))\
-            .read().replace('\n', '', 1).split(':')[3]
+        time.sleep(.3)
+        if cmd == '/run' or cmd == '/stop' or cmd == '/log':
+            dir_name = os.popen('grep -v grep {}/bash_scripts/1-config.txt | grep {}'.format(self.base_path, query.data))\
+                .read().replace('\n', '', 1).split(':')[3]
+        else:
+            dir_name = ''
         cmd_dict = {
             '/run': '{}/bash_scripts/{}'.format(self.base_path, query.data),
             '/stop': '{}/bash_scripts/{}-kill'.format(self.base_path, query.data),
