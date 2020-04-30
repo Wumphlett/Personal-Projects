@@ -98,8 +98,9 @@ class TelegramTerminal:
 
     def allscripts(self, update, context):
         if update.message.from_user.id == self.superuser:
-            keyboard = [InlineKeyboardButton('run', callback_data='run'),
-                        InlineKeyboardButton('stop', callback_data='stop')]
+            keyboard = [[InlineKeyboardButton('run', callback_data='run'),
+                        InlineKeyboardButton('stop', callback_data='stop')]]
+            keyboard = InlineKeyboardMarkup(keyboard)
             context.bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
             update.message.reply_text('/allscripts <script>', reply_markup=keyboard)
         else:
