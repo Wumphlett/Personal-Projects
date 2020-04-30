@@ -41,6 +41,9 @@ class TelegramTerminal:
         log_handler = CommandHandler('log', self.log)
         dispatcher.add_handler(log_handler)
 
+        all_scripts = CommandHandler('allscripts', self.allscripts)
+        dispatcher.add_handler(all_scripts)
+
         dispatcher.add_handler(CallbackQueryHandler(self.call_back))
         dispatcher.add_error_handler(self.error)
 
@@ -54,10 +57,12 @@ class TelegramTerminal:
                 [KeyboardButton('/running')],
                 [KeyboardButton('/run'), KeyboardButton('/stop')],
                 [KeyboardButton('/log'), KeyboardButton('/auth')],
-                [KeyboardButton('allscripts')]
+                [KeyboardButton('/allscripts')]
             ]
             kb_markup = ReplyKeyboardMarkup(keyboard)
-            context.bot.send_message(chat_id=update.message.chat_id, text='Welcome Superuser', reply_markup=kb_markup)
+            username = update.message.from_user.username
+            context.bot.send_message(chat_id=update.message.chat_id,
+                                     text='Welcome {}'.format(username), reply_markup=kb_markup)
 
     def running(self, update, context):
         if update.message.from_user.id == self.superuser:
@@ -141,4 +146,3 @@ if __name__ == '__main__':
 
     terminal.updater.start_polling()
     terminal.updater.idle()
-    
