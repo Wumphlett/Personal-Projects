@@ -19,7 +19,6 @@ class TelegramTerminal:
             ymlfile.close()
         self.updater = Updater(token=self.token, use_context=True)
         self.init_dispatch()
-        self.superuser = ''
 
     def init_dispatch(self):
         dispatcher = self.updater.dispatcher
@@ -54,7 +53,8 @@ class TelegramTerminal:
             keyboard = [
                 [KeyboardButton('/running')],
                 [KeyboardButton('/run'), KeyboardButton('/stop')],
-                [KeyboardButton('/log'), KeyboardButton('/auth')]
+                [KeyboardButton('/log'), KeyboardButton('/auth')],
+                [KeyboardButton('allscripts')]
             ]
             kb_markup = ReplyKeyboardMarkup(keyboard)
             context.bot.send_message(chat_id=update.message.chat_id, text='Welcome Superuser', reply_markup=kb_markup)
@@ -91,6 +91,15 @@ class TelegramTerminal:
         else:
             context.bot.send_message(chat_id=update.effective_chat.id, text='Permission Denied')
 
+    def allscripts(self, update, context):
+        if update.message.from_user.id == self.superuser:
+            keyboard = [InlineKeyboardButton('run', callback_data='run'),
+                        InlineKeyboardButton('stop', callback_data='stop')]
+            context.bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
+            update.message.reply_text('/allscripts <script>', reply_markup=keyboard)
+        else:
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Permission Denied')
+
     def call_back(self, update, context):
         query = update.callback_query
         query.answer()
@@ -102,7 +111,8 @@ class TelegramTerminal:
         cmd_dict = {
             '/run': '{}/bash_scripts/{}'.format(self.base_path, query.data),
             '/stop': '{}/bash_scripts/{}-kill'.format(self.base_path, query.data),
-            '/log': 'tail -n 20 {}/{}/log.txt'.format(self.base_path, dir_name)
+            '/log': 'tail -n 15 {}/{}/log.txt'.format(self.base_path, dir_name),
+            '/allscripts': '{}/bash_scripts/allscripts {}'.format(self.base_path, query.data)
         }
         cmd_return = os.popen(cmd_dict[query.message.text.split()[0]]).read()
         query.edit_message_text(text=cmd_return)
@@ -131,3 +141,4 @@ if __name__ == '__main__':
 
     terminal.updater.start_polling()
     terminal.updater.idle()
+    
