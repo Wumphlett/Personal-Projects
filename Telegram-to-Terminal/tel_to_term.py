@@ -125,6 +125,8 @@ class TelegramTerminal:
             '/allscripts': '{}/bash_scripts/allscripts {}'.format(self.base_path, query.data)
         }
         cmd_return = os.popen(cmd_dict[query.message.text.split()[0]]).read()
+        if cmd_return == '':
+            cmd_return = 'Error: Empty Command Return'
         query.edit_message_text(text=cmd_return)
 
     def get_options(self):
