@@ -62,7 +62,7 @@ class TelegramTerminal:
             kb_markup = ReplyKeyboardMarkup(keyboard)
             username = update.message.from_user.username
             context.bot.send_message(chat_id=update.message.chat_id,
-                                     text='Welcome {}'.format(username), reply_markup=kb_markup)
+                                     text='Welcome SU @{}'.format(username), reply_markup=kb_markup)
 
     def running(self, update, context):
         if update.message.from_user.id == self.superuser:
