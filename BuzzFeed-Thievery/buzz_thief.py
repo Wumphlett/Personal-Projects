@@ -58,13 +58,13 @@ class BuzzThief:
                 aux = articles[0].find_element_by_xpath('.//a').get_attribute('href')
                 articles = [article.find_element_by_xpath('.//a').get_attribute('href') for article in articles]
                 if self.last_article not in articles:  # deleted last article check
+                    now = datetime.datetime.now().strftime('%H:%M:%S')
+                    logging.info('ERROR({}):Last article deleted, setting last to {}'.format(now, articles[0]))
                     self.last_article = articles[0]
                     continue
                 for article_url in articles:
                     if self.last_article == article_url:
                         self.last_article = aux
-                        now = datetime.datetime.now().strftime('%H:%M:%S')
-                        logging.info('ERROR({}): Last article deleted, setting last to {}'.format(now, articles[0]))
                         break
                     else:
                         self.queue.put(article_url)
@@ -197,13 +197,13 @@ if __name__ == '__main__':
     bt = BuzzThief()
     try:
         signal.signal(signal.SIGTERM, sig_kill)
-        signal.signal(signal.SIGUSR1, sig_kill)
+        #signal.signal(signal.SIGUSR1, sig_kill)
         bt.article_monitoring.start()
-        bt.blacklist_monitoring.start()
-        bt.send_notification_tweets.start()
+        #bt.blacklist_monitoring.start()
+        #bt.send_notification_tweets.start()
         bt.article_monitoring.join()
-        bt.blacklist_monitoring.join()
-        bt.send_notification_tweets.join()
+        #bt.blacklist_monitoring.join()
+        #bt.send_notification_tweets.join()
     except SystemExit as se:
         exit_time = datetime.datetime.now().strftime('%H:%M:%S')
         if se.code == 0:
