@@ -59,7 +59,8 @@ class BuzzThief:
                 articles = [article.find_element_by_xpath('.//a').get_attribute('href') for article in articles]
                 if self.last_article not in articles:  # deleted last article check
                     now = datetime.datetime.now().strftime('%H:%M:%S')
-                    logging.info('ERROR({}):Last article deleted, setting last to {}'.format(now, articles[0]))
+                    logging.info('ERROR({}):Last article deleted, setting last to {}'.format(now,
+                                                                                             articles[0].split('/')[-1]))
                     self.last_article = articles[0]
                     continue
                 for article_url in articles:
