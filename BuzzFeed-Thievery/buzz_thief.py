@@ -41,36 +41,32 @@ class BuzzThief:
             wait = WebDriverWait(self.driver, 15)
             wait.until(lambda x: self.driver.execute_script('return document.readyState') == 'complete')
 
-            if self.last_article == '':
-                self.driver.get(self.search_url)
-                self.last_article = self.driver.find_element_by_xpath(
-                    '//*[@id="mod-search-feed-1"]/div[1]/section/article[1]/a').get_attribute('href')
+            self.driver.get(self.search_url)
+            self.last_article = self.driver.find_element_by_xpath(
+                '//*[@id="mod-search-feed-1"]/div[1]/section/article[1]/a').get_attribute('href')
+            now = datetime.datetime.now().strftime('%H:%M:%S')
+            logging.info('QUEUE({}):Latest article upon start up is {}'.format(now, self.last_article.split('/')[-1]))
+            if self.config['latest-article'].lower() == 'instant':
                 now = datetime.datetime.now().strftime('%H:%M:%S')
-                logging.info('QUEUE({}):Latest article upon start up is {}'.format(now, self.last_article.split('/')[-1]))
-                if self.config['latest-article'].lower() == 'instant':
-                    now = datetime.datetime.now().strftime('%H:%M:%S')
-                    logging.info('QUEUE({}):Adding {} to queue'.format(now, self.last_article.split('/')[-1]))
-                    self.queue.put(self.last_article)
+                logging.info('QUEUE({}):Adding {} to queue'.format(now, self.last_article.split('/')[-1]))
+                self.queue.put(self.last_article)
 
             while self.article_monitoring.is_alive():
                 self.driver.get(self.search_url)
                 articles = self.driver.find_elements_by_xpath('//*[@id="mod-search-feed-1"]/div[1]/section/article')
-                aux = articles[0].find_element_by_xpath('.//a').get_attribute('href')
                 articles = [article.find_element_by_xpath('.//a').get_attribute('href') for article in articles]
-                if self.last_article not in articles:  # deleted last article check
-                    now = datetime.datetime.now().strftime('%H:%M:%S')
-                    logging.info('ERROR({}):Last article deleted, setting last to {}'.format(now,
-                                                                                             articles[0].split('/')[-1]))
-                    self.last_article = articles[0]
-                    continue
-                for article_url in articles:
-                    if self.last_article == article_url:
-                        self.last_article = aux
-                        break
-                    else:
+                try:
+                    ind = articles.index(self.last_article)
+                    for article_url in articles[:ind]:
                         self.queue.put(article_url)
                         now = datetime.datetime.now().strftime('%H:%M:%S')
                         logging.info('QUEUE({}):Adding {} to queue'.format(now, article_url.split('/')[-1]))
+                except ValueError:
+                    now = datetime.datetime.now().strftime('%H:%M:%S')
+                    logging.info('ERROR({}):Last article deleted, setting last to {}'.format(now,
+                                                                                             articles[0].split('/')[-1]))
+                finally:
+                    self.last_article = articles[0]
                 now = datetime.datetime.now().strftime('%H:%M:%S')
                 logging.info('QUEUE({}):Completed article check'.format(now, self.last_article.split('/')[-1]))
                 time.sleep(900)  # in seconds
