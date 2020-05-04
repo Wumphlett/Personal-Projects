@@ -10,6 +10,7 @@ import logging
 from threading import Thread
 from queue import Queue
 import datetime
+import schedule
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
@@ -27,12 +28,13 @@ class BuzzThief:
         self.article_monitoring = Thread(target=self.monitor_feed, daemon=True)
         self.blacklist_monitoring = Thread(target=self.monitor_mentions, daemon=True)
         self.send_notification_tweets = Thread(target=self.send_tweets, daemon=True)
+        self.send_stats = Thread(target=self.stats_monitoring, daemon=True)
         if os.path.isfile('stats.json') and os.stat('stats.json').st_size != 0:
-            with open('stats.json') as file:
-                stats = json.load(file)
-                self.article_count = stats['articles']
-                self.tweet_count = stats['tweets']
-                file.close()
+            with open('stats.json') as f:
+                stats_dict = json.load(file)
+                self.article_count = stats_dict['articles']
+                self.tweet_count = stats_dict['tweets']
+                f.close()
         else:
             self.article_count = 0
             self.tweet_count = 0
@@ -60,6 +62,7 @@ class BuzzThief:
                 now = datetime.datetime.now().strftime('%H:%M:%S')
                 logging.info('QUEUE({}):Adding {} to queue'.format(now, self.last_article.split('/')[-1]))
                 self.queue.put(self.last_article)
+                self.article_count += 1
 
             while self.article_monitoring.is_alive():
                 self.driver.get(self.search_url)
@@ -174,6 +177,32 @@ class BuzzThief:
             os.system('kill -10 {}'.format(os.getpid()))
             return
 
+    def stats_monitoring(self):
+        try:
+            while self.send_stats.is_alive():
+                keys_dict = self.config['twitter-auth-keys']
+                auth = tweepy.OAuthHandler(keys_dict['Consumer Key'], keys_dict['Consumer Secret'])
+                auth.set_access_token(keys_dict['Access Token'], keys_dict['Access Token Secret'])
+                twitter = tweepy.API(auth)
+                schedule.every().day.at('00:01').do(self.send_stat_tweet, twitter=twitter)
+                while True:
+                    schedule.run_pending()
+                    time.sleep(10)
+        except Exception:
+            exc_time = datetime.datetime.now().strftime('%H:%M:%S')
+            logging.exception('({}):EXCEPTION'.format(exc_time))
+            os.system('kill -10 {}'.format(os.getpid()))
+            return
+
+    def send_stat_tweet(self, twitter):
+        now = datetime.datetime.now().strftime('%x')
+        tweet_body = 'Buzz Thief stats as of {}\nArticles detected: {}\nNotifications send: {}' \
+                     '\nLast article detected {}'.format(now, str(self.article_count),
+                                                         str(self.tweet_count), self.last_article)
+        twitter.update_status(tweet_body)
+        now = datetime.datetime.now().strftime('%H:%M:%S')
+        logging.info('TWEET({}):Stats tweet sent'.format(now))
+
     @staticmethod
     def check_black_list(handle):
         with open(sys.path[0] + '/blacklist.txt', 'r') as blacklist:
@@ -210,9 +239,11 @@ if __name__ == '__main__':
         bt.article_monitoring.start()
         bt.blacklist_monitoring.start()
         bt.send_notification_tweets.start()
+        bt.send_stats.start()
         bt.article_monitoring.join()
         bt.blacklist_monitoring.join()
         bt.send_notification_tweets.join()
+        bt.send_stats.join()
     except SystemExit as se:
         exit_time = datetime.datetime.now().strftime('%H:%M:%S')
         if se.code == 0:
