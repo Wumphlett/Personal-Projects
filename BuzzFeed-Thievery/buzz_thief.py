@@ -5,6 +5,7 @@ import requests
 import signal
 import tweepy
 import yaml
+import json
 import logging
 from threading import Thread
 from queue import Queue
@@ -26,6 +27,15 @@ class BuzzThief:
         self.article_monitoring = Thread(target=self.monitor_feed, daemon=True)
         self.blacklist_monitoring = Thread(target=self.monitor_mentions, daemon=True)
         self.send_notification_tweets = Thread(target=self.send_tweets, daemon=True)
+        if os.path.isfile('stats.json') and os.stat('stats.json').st_size != 0:
+            with open('stats.json') as file:
+                stats = json.load(file)
+                self.article_count = stats['articles']
+                self.tweet_count = stats['tweets']
+                file.close()
+        else:
+            self.article_count = 0
+            self.tweet_count = 0
         chrome_options = Options()
         chrome_options.add_argument('--incognito')
         chrome_options.add_argument('--headless')
@@ -61,6 +71,7 @@ class BuzzThief:
                         self.queue.put(article_url)
                         now = datetime.datetime.now().strftime('%H:%M:%S')
                         logging.info('QUEUE({}):Adding {} to queue'.format(now, article_url.split('/')[-1]))
+                        self.article_count += 1
                 except ValueError:
                     now = datetime.datetime.now().strftime('%H:%M:%S')
                     logging.info('ERROR({}):Last article deleted, setting last to {}'.format(now,
@@ -147,6 +158,7 @@ class BuzzThief:
                                          'them here; {}\nTo stop receiving these notifications, ' \
                                          'reply with the word halt'.format(author, article_url, support)
                             twitter.update_status(tweet_body)
+                            self.tweet_count += 1
                             now = datetime.datetime.now().strftime('%H:%M:%S')
                             logging.info('TWEET({}):Notification ({}) sent to {} for {}'
                                          .format(now, str(num + 1), author, article_url.split('/')[-1]))
@@ -194,13 +206,13 @@ if __name__ == '__main__':
     bt = BuzzThief()
     try:
         signal.signal(signal.SIGTERM, sig_kill)
-        #signal.signal(signal.SIGUSR1, sig_kill)
+        signal.signal(signal.SIGUSR1, sig_kill)
         bt.article_monitoring.start()
-        #bt.blacklist_monitoring.start()
-        #bt.send_notification_tweets.start()
+        bt.blacklist_monitoring.start()
+        bt.send_notification_tweets.start()
         bt.article_monitoring.join()
-        #bt.blacklist_monitoring.join()
-        #bt.send_notification_tweets.join()
+        bt.blacklist_monitoring.join()
+        bt.send_notification_tweets.join()
     except SystemExit as se:
         exit_time = datetime.datetime.now().strftime('%H:%M:%S')
         if se.code == 0:
@@ -210,4 +222,8 @@ if __name__ == '__main__':
         bt.driver.quit()
         sys.exit(se.code)
     finally:
+        stats = {'articles': bt.article_count, 'tweets': bt.tweet_count}
+        with open('stats.json', 'w') as file:
+            json.dump(stats, file, indent=4)
+            file.close()
         sys.exit(0)
