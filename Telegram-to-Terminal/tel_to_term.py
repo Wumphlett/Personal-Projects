@@ -56,7 +56,7 @@ class TelegramTerminal:
             keyboard = [
                 [KeyboardButton('/running')],
                 [KeyboardButton('/run'), KeyboardButton('/stop')],
-                [KeyboardButton('/log'), KeyboardButton('/auth')],
+                [KeyboardButton('/log'), KeyboardButton('/rpi')],
                 [KeyboardButton('/allscripts')]
             ]
             kb_markup = ReplyKeyboardMarkup(keyboard)
@@ -106,6 +106,16 @@ class TelegramTerminal:
         else:
             context.bot.send_message(chat_id=update.effective_chat.id, text='Permission Denied')
 
+    def rpi(self, update, context):
+        if update.message.from_user.id == self.superuser:
+            keyboard = [[InlineKeyboardButton('halt', callback_data='h'),
+                        InlineKeyboardButton('reboot', callback_data='r')]]
+            keyboard = InlineKeyboardMarkup(keyboard)
+            context.bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
+            update.message.reply_text('/rpi <action>', reply_markup=keyboard)
+        else:
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Permission Denied')
+
     def call_back(self, update, context):
         query = update.callback_query
         query.answer()
@@ -122,7 +132,8 @@ class TelegramTerminal:
             '/run': '{}/bash_scripts/{}'.format(self.base_path, query.data),
             '/stop': '{}/bash_scripts/{}-kill'.format(self.base_path, query.data),
             '/log': 'tail -n 15 {}/{}/log.txt'.format(self.base_path, dir_name),
-            '/allscripts': '{}/bash_scripts/allscripts {}'.format(self.base_path, query.data)
+            '/allscripts': '{}/bash_scripts/allscripts {}'.format(self.base_path, query.data),
+            '/rpi': 'sudo shutdown -{} now'.format(query.data)
         }
         cmd_return = os.popen(cmd_dict[query.message.text.split()[0]]).read()
         if cmd_return == '':
