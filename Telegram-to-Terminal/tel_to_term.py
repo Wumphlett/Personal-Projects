@@ -26,9 +26,6 @@ class TelegramTerminal:
         start_handler = CommandHandler('start', self.start)
         dispatcher.add_handler(start_handler)
 
-        auth_handler = CommandHandler('auth', self.start)
-        dispatcher.add_handler(auth_handler)
-
         running_handler = CommandHandler('running', self.running)
         dispatcher.add_handler(running_handler)
 
@@ -41,8 +38,11 @@ class TelegramTerminal:
         log_handler = CommandHandler('log', self.log)
         dispatcher.add_handler(log_handler)
 
-        all_scripts = CommandHandler('allscripts', self.allscripts)
-        dispatcher.add_handler(all_scripts)
+        all_scripts_handler = CommandHandler('allscripts', self.allscripts)
+        dispatcher.add_handler(all_scripts_handler)
+
+        rpi_handler = CommandHandler('rpi', self.rpi)
+        dispatcher.add_handler(rpi_handler)
 
         dispatcher.add_handler(CallbackQueryHandler(self.call_back))
         dispatcher.add_error_handler(self.error)
