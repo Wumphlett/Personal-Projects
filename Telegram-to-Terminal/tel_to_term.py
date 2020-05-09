@@ -108,8 +108,8 @@ class TelegramTerminal:
 
     def rpi(self, update, context):
         if update.message.from_user.id == self.superuser:
-            keyboard = [[InlineKeyboardButton('halt', callback_data='h'), InlineKeyboardButton('reboot', callback_data='r')],
-                        [InlineKeyboardButton('ips', callback_data='ips'), InlineKeyboardButton('datetime', callback_data='date')]]
+            keyboard = [[InlineKeyboardButton('halt', callback_data='h'), InlineKeyboardButton('ips', callback_data='ips')],
+                        [InlineKeyboardButton('reboot', callback_data='r'), InlineKeyboardButton('datetime', callback_data='date')]]
             keyboard = InlineKeyboardMarkup(keyboard)
             context.bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
             update.message.reply_text('/rpi <action>', reply_markup=keyboard)
