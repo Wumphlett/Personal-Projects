@@ -29,8 +29,8 @@ class BuzzThief:
         self.blacklist_monitoring = Thread(target=self.monitor_mentions, daemon=True)
         self.send_notification_tweets = Thread(target=self.send_tweets, daemon=True)
         self.send_stats = Thread(target=self.stats_monitoring, daemon=True)
-        if os.path.isfile('stats.json') and os.stat('stats.json').st_size != 0:
-            with open('stats.json') as f:
+        if os.path.isfile(sys.path[0] + '/stats.json') and os.stat(sys.path[0] + '/stats.json').st_size != 0:
+            with open(sys.path[0] + '/stats.json') as f:
                 stats_dict = json.load(f)
                 self.article_count = stats_dict['articles']
                 self.tweet_count = stats_dict['tweets']
@@ -47,6 +47,8 @@ class BuzzThief:
         init_time = datetime.datetime.now().strftime('%H:%M:%S')
         mode = 'instant' if self.config['latest-article'] == 'instant' else 'latest'
         logging.info('START({}):Starting Bot in Mode: {}'.format(init_time, mode))
+        logging.info(
+            'START({}):Stats, Articles: {}, Tweets: {}'.format(init_time, self.article_count, self.tweet_count))
 
     def monitor_feed(self):
         try:
@@ -254,7 +256,7 @@ if __name__ == '__main__':
         sys.exit(se.code)
     finally:
         stats = {'articles': bt.article_count, 'tweets': bt.tweet_count}
-        with open('stats.json', 'w') as file:
+        with open(sys.path[0] + '/stats.json', 'w') as file:
             json.dump(stats, file, indent=4)
             file.close()
         sys.exit(0)
