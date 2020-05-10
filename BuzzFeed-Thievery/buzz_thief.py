@@ -31,7 +31,7 @@ class BuzzThief:
         self.send_stats = Thread(target=self.stats_monitoring, daemon=True)
         if os.path.isfile('stats.json') and os.stat('stats.json').st_size != 0:
             with open('stats.json') as f:
-                stats_dict = json.load(file)
+                stats_dict = json.load(f)
                 self.article_count = stats_dict['articles']
                 self.tweet_count = stats_dict['tweets']
                 f.close()
