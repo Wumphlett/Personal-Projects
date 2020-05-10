@@ -70,6 +70,11 @@ class BuzzThief:
                 self.driver.get(self.search_url)
                 articles = self.driver.find_elements_by_xpath('//*[@id="mod-search-feed-1"]/div[1]/section/article')
                 articles = [article.find_element_by_xpath('.//a').get_attribute('href') for article in articles]
+                if len(articles) == 0:
+                    now = datetime.datetime.now().strftime('%H:%M:%S')
+                    logging.info('ERROR({}):Article list contains zero entries, waiting then retry'.format(now))
+                    time.sleep(900)
+                    continue
                 try:
                     ind = articles.index(self.last_article)
                     for article_url in articles[:ind]:
@@ -143,8 +148,12 @@ class BuzzThief:
                     tweet_authors = []
                     response = requests.get(article_url)
                     for line in response.text.split('\n'):
-                        if 'class="subbuzz-tweet__username' in line:
+                        if 'class="subbuzz-tweet__username' in line:  # subbuzz tweet find
                             start = line.find('>') + 1
+                            end = line.rfind('<')
+                            tweet_authors.append(line[start:end])
+                        if 'Twitter: ' in line:  # subbuzz image attribution find
+                            start = line.find('@')
                             end = line.rfind('<')
                             tweet_authors.append(line[start:end])
                     now = datetime.datetime.now().strftime('%H:%M:%S')
