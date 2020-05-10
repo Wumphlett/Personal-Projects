@@ -129,8 +129,8 @@ class TelegramTerminal:
         else:
             dir_name = ''
         rpi = {
-            'halt': 'sudo shutdown -h now',
-            'reboot': 'sudo shutdown -r now',
+            'halt': '{}/bash_scripts/allscripts stop; sleep 10; sudo shutdown -h now'.format(self.base_path),
+            'reboot': '{}/bash_scripts/allscripts stop; sleep 10; sudo shutdown -r now'.format(self.base_path),
             'ips': '{}/bash_scripts/ips'.format(self.base_path),
             'date': 'date'
         }
