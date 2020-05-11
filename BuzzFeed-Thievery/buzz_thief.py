@@ -171,12 +171,16 @@ class BuzzThief:
                                          '\nThe article can be found here; {}\nTo request removal of your tweet, contact ' \
                                          'them here; {}\nTo stop receiving these notifications, ' \
                                          'reply with the word halt'.format(author, article_url, support)
-                            twitter.update_status(tweet_body)
-                            self.tweet_count += 1
-                            now = datetime.datetime.now().strftime('%H:%M:%S')
-                            logging.info('TWEET({}):Notification ({}) sent to {} for {}'
-                                         .format(now, str(num + 1), author, article_url.split('/')[-1]))
-                            self.last_tweet = datetime.datetime.now()
+                            try:
+                                twitter.update_status(tweet_body)
+                                self.tweet_count += 1
+                                now = datetime.datetime.now().strftime('%H:%M:%S')
+                                logging.info('TWEET({}):Notification ({}) sent to {} for {}'
+                                             .format(now, str(num + 1), author, article_url.split('/')[-1]))
+                                self.last_tweet = datetime.datetime.now()
+                            except tweepy.TweepError:
+                                now = datetime.datetime.now().strftime('%H:%M:%S')
+                                logging.info('ERROR({}):Tweepy error, skipping tweet and resuming'.format(now))
                             time.sleep(300)  # at least 5 min between tweets to avoid bad bot flag
                     self.queue.task_done()
                 else:
