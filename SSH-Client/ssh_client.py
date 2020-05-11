@@ -4,13 +4,14 @@ import json
 
 
 class Connection:
-    def __init__(self, head_dir, name, host, user, password):
+    def __init__(self, head_dir, name, host, user, password, port):
         self.head_dir = head_dir
         self.name = ''
         self.set_name(name)
         self.host = host
         self.user = user
         self.password = password
+        self.port = port
 
     def set_name(self, name):
         if name is '' or name.isdigit() or '/' in name or name == 'root' or ' ' in name:
@@ -40,10 +41,18 @@ class Connection:
         else:
             raise ClientErr.InvalidAttrError
 
+    def set_port(self, port):
+        if port != '' and ' ' not in port:
+            self.port = port
+        elif 'del port' in port:
+            self.port = None
+        else:
+            raise ClientErr.InvalidAttrError
+
 
 class SecureShell(Connection):
-    def __init__(self, head_dir, name, host, user, password=None):
-        super().__init__(head_dir, name, host, user, password)
+    def __init__(self, head_dir, name, host, user, password=None, port=None):
+        super().__init__(head_dir, name, host, user, password, port)
 
     def con_cmd(self):
         command = 'ssh {}@{}'.format(self.user, self.host)
@@ -51,19 +60,18 @@ class SecureShell(Connection):
         return command
 
     def to_dict(self):
-        return {self.name: [self.name, self.host, self.user, self.password]}
+        return {self.name: ['ssh', self.name, self.host, self.user, self.password, self.port]}
 
     def __str__(self):
         return '(s) ' + self.name
 
     def __repr__(self):
-        return 'S ' + self.name + ' ' + self.user + ' ' + self.host + ' ' + self.password
+        return 'S ' + self.name + ' ' + self.user + ' ' + self.host + ' ' + self.port + ' ' + self.password
 
 
 class Telnet(Connection):
     def __init__(self, head_dir, name, host, user=None, password=None, port=''):
-        super().__init__(head_dir, name, host, user, password)
-        self.port = port
+        super().__init__(head_dir, name, host, user, password, port)
 
     def con_cmd(self):
         command = '{} {}'.format(self.host, self.port)
@@ -72,15 +80,7 @@ class Telnet(Connection):
         return command
 
     def to_dict(self):
-        return {self.name: [self.name, self.host, self.user, self.password, self.port]}
-
-    def set_port(self, port):
-        if port != '' and ' ' not in port:
-            self.port = port
-        elif 'del port' in port:
-            self.port = None
-        else:
-            raise ClientErr.InvalidAttrError
+        return {self.name: ['telnet', self.name, self.host, self.user, self.password, self.port]}
 
     def set_user(self, user):
         if user != '' and ' ' not in user:
@@ -185,8 +185,8 @@ class Client:
         new_dir = Directory(self.cur_dir, dir_name)
         self.cur_dir.add_entry(new_dir)
 
-    def make_ssh(self, ssh_name, user, host, password):
-        new_ssh = SecureShell(self.cur_dir, ssh_name, host, user, password)
+    def make_ssh(self, ssh_name, user, host, port, password):
+        new_ssh = SecureShell(self.cur_dir, ssh_name, host, user, password, port)
         self.cur_dir.add_entry(new_ssh)
 
     def make_tel(self, tel_name, host, port, user, password):
@@ -214,6 +214,7 @@ class Client:
             print('\tSecureShell Name: ' + info_entry.name)
             print('\tSecureShell Username: ' + info_entry.user)
             print('\tSecureShell Host: ' + info_entry.host)
+            print('\tSecureShell Port: ' + str(info_entry.port))
             print('\tSecureShell Password: ' + str(info_entry.password))
         elif type(info_entry) is Telnet:
             print('\tTelnet Name: ' + info_entry.name)
@@ -238,6 +239,12 @@ class Client:
             edit_entry.set_user(new_user) if new_user != '' else None
             new_host = input('Current SecureShell host is \'' + edit_entry.host + '\' change it to >> ')
             edit_entry.set_host(new_host) if new_host != '' else None
+            print('Here you can change or delete your port. To delete your password, enter \'del port\'')
+            if edit_entry.port is None:
+                new_port = input('Current SecureShell has the default port. Add one as >> ')
+            else:
+                new_port = input('Current SecureShell port is \'' + edit_entry.port + '\' change it to >> ')
+            edit_entry.set_port(new_port) if new_port != '' else None
             print('Here you can change or delete your password. To delete your password, enter \'del pass\'')
             if edit_entry.password is None:
                 new_pass = input('Current SecureShell has no password. Add one as >> ')
@@ -384,13 +391,13 @@ class Client:
                 cur_dir.add_entry(new_dir)
                 self.load_dict(new_dir, cur_dict[name])
             elif type(cur_dict[name]) is list:  # Connection saved as list
-                if len(cur_dict[name]) == 4:  # SecureShell saved as list len = 4
+                if cur_dict[name][0] == 'ssh':  # SecureShell saved as ssh
                     ssh_list = cur_dict[name]
-                    new_ssh = SecureShell(cur_dir, ssh_list[0], ssh_list[1], ssh_list[2], ssh_list[3])
+                    new_ssh = SecureShell(cur_dir, ssh_list[1], ssh_list[2], ssh_list[3], ssh_list[4], ssh_list[5])
                     cur_dir.add_entry(new_ssh)
-                elif len(cur_dict[name]) == 5:  # Telnet saved as list len = 5
+                elif cur_dict[name][0] == 'telnet':  # Telnet saved as telnet
                     tel_list = cur_dict[name]
-                    new_tel = Telnet(cur_dir, tel_list[0], tel_list[1], tel_list[2], tel_list[3], tel_list[4])
+                    new_tel = Telnet(cur_dir, tel_list[1], tel_list[2], tel_list[3], tel_list[4], tel_list[5])
                     cur_dir.add_entry(new_tel)
                 else:
                     print('Malformed connection at key ' + name)
@@ -466,7 +473,8 @@ class CmdSwitch:
         user = usr_inp[2]
         host = usr_inp[3]
         password = usr_inp[4] if len(usr_inp) > 4 else None
-        cur_cli.make_ssh(ssh_name, user, host, password)
+        port = usr_inp[5] if len(usr_inp) > 5 else None
+        cur_cli.make_ssh(ssh_name, user, host, password, port)
 
     @staticmethod
     def client_mktel(cur_cli, usr_inp):
@@ -582,7 +590,7 @@ class ClientErr:
             self.error_dict = {
                 'mv': '\'mv\' requires the arguments <entry to be named or moved> <destination entry or name>',
                 'mkdir': '\'mkdir\' requires the argument <name of directory>',
-                'mkssh': '\'mkssh\' requires the arguments <ssh name> <user> <hostname> <op. password>',
+                'mkssh': '\'mkssh\' requires the arguments <ssh name> <user> <hostname> <op. port> <op. password>',
                 'mktel': '\'mktel\' requires the arguments <tel name> <host> <op. port> <op. user> <op. password>',
                 'ssh': '\'ssh\' requires the argument <name of ssh>',
                 'rm': '\'rm\' requires the argument <index or name of entry>'
@@ -618,7 +626,7 @@ class ClientErr:
                 'mkdir': '''Make a directory in the displayed directory.
                 Usage of the mkdir command: \'mkdir <directory name>\'''',
                 'mkssh': '''Make a SecureShell in the displayed directory.
-                Usage of the mkssh command: \'mkssh <ssh name> <username> <host> <op. password>\'''',
+                Usage of the mkssh command: \'mkssh <ssh name> <username> <host> <op.port> <op. password>\'''',
                 'mktel': '''Make a Telnet in the displayed directory.
                 Usage of the mktel command: \'mktel <tel name> <host> <op. port> <op. username> <op. password>\'''',
                 'edit': '''Edit the entry at the specified path.
@@ -645,6 +653,7 @@ if __name__ == '__main__':
         client.load_file()
     cmd_switch = CmdSwitch()
     os.system('clear')
+    print('Welcome to the SSH/Telnet Client. Use \'-h\' or \'--help\' to learn the command usage')
     while True:
         try:
             prompt = client.pwd.replace('/root', '~') + ' '
