@@ -2,3 +2,9 @@ BuzzFeed-Thievery/config.yml
 .idea
 */.idea
 *.yml
+BuzzFeed-Thievery/config.yml
+BuzzFeed-Thievery/debug.log
+BuzzFeed-Thievery/log.txt
+SSH-Client/.ssh_client.txt
+Telegram-to-Terminal/config.yml
+Telegram-to-Terminal/log.txt
